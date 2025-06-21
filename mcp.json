@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "questrade": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {
+        "QUESTRADE_API_URL": "https://api01.iq.questrade.com"
+      }
+    }
+  }
+}
