@@ -1,8 +1,11 @@
 {
   "name": "questrade-mcp-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "MCP server for Questrade API integration",
   "main": "dist/index.js",
+  "bin": {
+    "questrade-mcp-server": "dist/index.js"
+  },
   "type": "module",
   "scripts": {
     "build": "tsc",
