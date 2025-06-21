@@ -1,5 +1,8 @@
 # Questrade MCP Server
 
+[![npm version](https://badge.fury.io/js/questrade-mcp-server.svg)](https://badge.fury.io/js/questrade-mcp-server)
+[![Release](https://github.com/zachmelin/QuestradeMCP/actions/workflows/release.yml/badge.svg)](https://github.com/zachmelin/QuestradeMCP/actions/workflows/release.yml)
+
 An **unofficial** Model Context Protocol (MCP) server for integrating with the Questrade API, providing access to trading accounts, market data, and portfolio information.
 
 > **⚠️ Disclaimer**: This is an unofficial, community-built integration and is not affiliated with, endorsed by, or supported by Questrade Inc. Use at your own risk.
