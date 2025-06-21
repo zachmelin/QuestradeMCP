@@ -14,6 +14,14 @@ An **unofficial** Model Context Protocol (MCP) server for integrating with the Q
 
 ## Installation
 
+### Option 1: Install from npm (Recommended)
+
+```bash
+npm install -g questrade-mcp-server
+```
+
+### Option 2: Clone and Build
+
 1. Clone this repository
 2. Install dependencies:
    ```bash
@@ -94,6 +102,23 @@ npm start
    - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 2. **Add the MCP server configuration**:
+
+   **Quick setup (Recommended)**
+   ```json
+   {
+     "mcpServers": {
+       "questrade": {
+         "command": "npx",
+         "args": ["questrade-mcp-server"],
+         "env": {
+           "QUESTRADE_REFRESH_TOKEN": "your_refresh_token_here"
+         }
+       }
+     }
+   }
+   ```
+
+   **Local development build**
    ```json
    {
      "mcpServers": {
@@ -108,7 +133,7 @@ npm start
    }
    ```
 
-3. **Update the path** to match your actual project location
+3. **If using local build, update the path** to match your actual project location
 
 4. **Restart Claude Desktop**
 
