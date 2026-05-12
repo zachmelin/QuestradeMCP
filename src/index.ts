@@ -2,6 +2,7 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -15,6 +16,8 @@ import { QuestradeClient } from './questrade-client.js';
 import { QuestradeConfig } from './types.js';
 import { TokenManager } from './token-manager.js';
 import * as dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -597,10 +600,50 @@ Please provide:
   }
 
   async run(): Promise<void> {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
+    const useStdio =
+      process.argv.includes('--stdio') || process.env.MCP_TRANSPORT === 'stdio';
 
-    process.stderr.write('Questrade MCP server running on stdio\n');
+    if (useStdio) {
+      const transport = new StdioServerTransport();
+      await this.server.connect(transport);
+      process.stderr.write('Questrade MCP server running on stdio\n');
+      return;
+    }
+
+    // HTTP/SSE mode
+    const app = express();
+    app.use(cors());
+    app.use(express.json());
+
+    let sseTransport: SSEServerTransport | null = null;
+
+    app.get('/sse', async (_req, res) => {
+      process.stderr.write('SSE client connecting...\n');
+      sseTransport = new SSEServerTransport('/message', res);
+
+      res.on('close', () => {
+        process.stderr.write('SSE client disconnected\n');
+        sseTransport = null;
+      });
+
+      await this.server.connect(sseTransport);
+      process.stderr.write('SSE client connected\n');
+    });
+
+    app.post('/message', async (req, res) => {
+      if (!sseTransport) {
+        res.status(400).json({ error: 'No active SSE connection' });
+        return;
+      }
+      await sseTransport.handlePostMessage(req, res);
+    });
+
+    const port = parseInt(process.env.PORT || '8000', 10);
+    app.listen(port, () => {
+      process.stderr.write(`Questrade MCP server listening on port ${port}\n`);
+      process.stderr.write(`  SSE:     GET  http://localhost:${port}/sse\n`);
+      process.stderr.write(`  Message: POST http://localhost:${port}/message\n`);
+    });
   }
 }
 
