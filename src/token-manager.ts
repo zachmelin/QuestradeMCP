@@ -37,6 +37,15 @@ export class TokenManager {
   }
 
   async loadTokens(): Promise<{ refreshToken: string; accessToken?: string; apiUrl?: string }> {
+    // Env var explicitly set — always prefer it over cached file (handles fresh/rotated tokens)
+    if (process.env.QUESTRADE_REFRESH_TOKEN) {
+      return {
+        refreshToken: process.env.QUESTRADE_REFRESH_TOKEN,
+        accessToken: process.env.QUESTRADE_ACCESS_TOKEN,
+        apiUrl: process.env.QUESTRADE_API_URL
+      };
+    }
+
     try {
       if (fs.existsSync(this.tokenFilePath)) {
         const tokenData: TokenData = JSON.parse(await fs.promises.readFile(this.tokenFilePath, 'utf8'));
@@ -47,7 +56,7 @@ export class TokenManager {
         };
       }
     } catch (error) {
-      // Fall back to environment variables on file read error
+      // Fall back to empty on file read error
     }
 
     return {

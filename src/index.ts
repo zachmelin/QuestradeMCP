@@ -11,12 +11,16 @@ import {
   GetPromptRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
+import { fileURLToPath } from 'url';
+import * as path from 'path';
 import { QuestradeClient } from './questrade-client.js';
 import { QuestradeConfig } from './types.js';
 import { TokenManager } from './token-manager.js';
 import * as dotenv from 'dotenv';
 
-dotenv.config();
+// Resolve .env relative to this file (dist/index.js -> project root)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 class QuestradeServer {
   private server: Server;
