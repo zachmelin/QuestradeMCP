@@ -106,7 +106,7 @@ class QuestradeServer {
           },
           {
             name: 'get_balances',
-            description: 'Get balances for a specific account',
+            description: 'Get balances for a specific account. Returns one entry per currency (CAD and USD) — each is the portfolio value denominated in that currency, not a separate pool of money. Do not add the two together.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -271,7 +271,7 @@ class QuestradeServer {
               content: [
                 {
                   type: 'text',
-                  text: JSON.stringify(balances, null, 2),
+                  text: `Per-currency breakdown — CAD and USD entries show the same portfolio denominated in each currency. Do not sum them.\n\n${JSON.stringify(balances, null, 2)}`,
                 },
               ],
             };
@@ -474,7 +474,7 @@ class QuestradeServer {
                     type: 'text',
                     text: `Please provide a comprehensive portfolio analysis for Questrade account ${accountNumber}. Here's the data:
 
-**Account Balances:**
+**Account Balances (per-currency breakdown — CAD and USD are the same portfolio in each currency, not additive):**
 ${JSON.stringify(balances, null, 2)}
 
 **Current Positions:**
