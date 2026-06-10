@@ -106,7 +106,7 @@ class QuestradeServer {
           },
           {
             name: 'get_balances',
-            description: 'Get balances for a specific account. Returns an object keyed by currency (CAD, USD) with each currency\'s holdings reported separately. CAD and USD are independent figures — do not add them together.',
+            description: 'Get balances for a specific account. Returns an object keyed by currency. CAD shows Canadian dollar holdings; USD shows US dollar holdings. The account holds both as distinct currency balances — report them separately. To compute a combined total, apply a CAD/USD exchange rate.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -484,7 +484,7 @@ class QuestradeServer {
                     type: 'text',
                     text: `Please provide a comprehensive portfolio analysis for Questrade account ${accountNumber}. Here's the data:
 
-**Account Balances (keyed by currency — CAD and USD are independent figures):**
+**Account Balances (CAD = Canadian dollar holdings, USD = US dollar holdings — distinct currency balances, report each independently):**
 ${JSON.stringify(balances, null, 2)}
 
 **Current Positions:**
