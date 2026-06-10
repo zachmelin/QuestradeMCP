@@ -101,7 +101,7 @@ export class QuestradeClient {
     const response: AxiosResponse<{ perCurrencyBalances: Balance[], combinedBalances: Balance[], sodPerCurrencyBalances: Balance[], sodCombinedBalances: Balance[] }> = await this.http.get(
       `/v1/accounts/${accountNumber}/balances`
     );
-    return response.data.combinedBalances;
+    return response.data.perCurrencyBalances;
   }
 
   async getQuotes(symbolIds: number[]): Promise<Quote[]> {

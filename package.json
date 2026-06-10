@@ -1,6 +1,6 @@
 {
   "name": "questrade-mcp-server",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "MCP server for Questrade API integration",
   "main": "dist/index.js",
   "bin": {

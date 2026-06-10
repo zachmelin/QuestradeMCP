@@ -106,7 +106,7 @@ class QuestradeServer {
           },
           {
             name: 'get_balances',
-            description: 'Get balances for a specific account. Returns an object keyed by currency. CAD shows Canadian dollar holdings; USD shows US dollar holdings. The account holds both as distinct currency balances — report them separately. To compute a combined total, apply a CAD/USD exchange rate.',
+            description: 'Get balances for a specific account. Returns an object keyed by currency showing each currency\'s holdings in their native denomination — CAD holdings in CAD, USD holdings in USD. Report them separately. To compute a combined total, apply a CAD/USD exchange rate.',
             inputSchema: {
               type: 'object',
               properties: {
