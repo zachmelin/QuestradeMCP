@@ -106,7 +106,7 @@ class QuestradeServer {
           },
           {
             name: 'get_balances',
-            description: 'Get balances for a specific account. Returns one entry per currency (CAD and USD) — each is the portfolio value denominated in that currency, not a separate pool of money. Do not add the two together.',
+            description: 'Get balances for a specific account. Returns an object keyed by currency (CAD, USD) with each currency\'s holdings reported separately. CAD and USD are independent figures — do not add them together.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -267,11 +267,21 @@ class QuestradeServer {
               throw new McpError(ErrorCode.InvalidParams, 'accountNumber is required');
             }
             const balances = await client.getBalances(args.accountNumber as string);
+            const balancesByCurrency = Object.fromEntries(
+              balances.map(b => [b.currency, {
+                cash: b.cash,
+                marketValue: b.marketValue,
+                totalEquity: b.totalEquity,
+                buyingPower: b.buyingPower,
+                maintenanceExcess: b.maintenanceExcess,
+                isRealTime: b.isRealTime,
+              }])
+            );
             return {
               content: [
                 {
                   type: 'text',
-                  text: `Per-currency breakdown — CAD and USD entries show the same portfolio denominated in each currency. Do not sum them.\n\n${JSON.stringify(balances, null, 2)}`,
+                  text: JSON.stringify(balancesByCurrency, null, 2),
                 },
               ],
             };
@@ -474,7 +484,7 @@ class QuestradeServer {
                     type: 'text',
                     text: `Please provide a comprehensive portfolio analysis for Questrade account ${accountNumber}. Here's the data:
 
-**Account Balances (per-currency breakdown — CAD and USD are the same portfolio in each currency, not additive):**
+**Account Balances (keyed by currency — CAD and USD are independent figures):**
 ${JSON.stringify(balances, null, 2)}
 
 **Current Positions:**
