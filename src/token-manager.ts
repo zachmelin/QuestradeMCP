@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 
 interface TokenData {
+  bootstrapToken?: string;  // original env var token used to create this file
   refreshToken: string;
   accessToken?: string;
   apiUrl?: string;
@@ -14,7 +15,7 @@ export class TokenManager {
 
   constructor() {
     let defaultTokenDir: string;
-    
+
     if (process.env.QUESTRADE_TOKEN_DIR) {
       defaultTokenDir = process.env.QUESTRADE_TOKEN_DIR;
     } else {
@@ -24,9 +25,9 @@ export class TokenManager {
         defaultTokenDir = path.join(os.tmpdir(), 'questrade-mcp');
       }
     }
-    
+
     this.tokenFilePath = path.join(defaultTokenDir, 'tokens.json');
-    
+
     try {
       if (!fs.existsSync(defaultTokenDir)) {
         fs.mkdirSync(defaultTokenDir, { recursive: true });
@@ -37,11 +38,21 @@ export class TokenManager {
   }
 
   async loadTokens(): Promise<{ refreshToken: string; accessToken?: string; apiUrl?: string }> {
-    // Prefer the token file — it holds the current rotated refresh token after first use.
-    // Fall back to env vars only when no file exists (first-time bootstrap).
+    const envToken = process.env.QUESTRADE_REFRESH_TOKEN;
+
     try {
       if (fs.existsSync(this.tokenFilePath)) {
         const tokenData: TokenData = JSON.parse(await fs.promises.readFile(this.tokenFilePath, 'utf8'));
+
+        // If the env var has a new token the file has never seen, the user rotated manually — reset.
+        if (envToken && tokenData.bootstrapToken && envToken !== tokenData.bootstrapToken) {
+          return {
+            refreshToken: envToken,
+            accessToken: undefined,
+            apiUrl: undefined
+          };
+        }
+
         return {
           refreshToken: tokenData.refreshToken,
           accessToken: tokenData.accessToken,
@@ -53,7 +64,7 @@ export class TokenManager {
     }
 
     return {
-      refreshToken: process.env.QUESTRADE_REFRESH_TOKEN!,
+      refreshToken: envToken!,
       accessToken: process.env.QUESTRADE_ACCESS_TOKEN,
       apiUrl: process.env.QUESTRADE_API_URL
     };
@@ -61,7 +72,17 @@ export class TokenManager {
 
   async saveTokens(refreshToken: string, accessToken?: string, apiUrl?: string): Promise<void> {
     try {
+      // Preserve bootstrapToken if file already exists, otherwise record the current env var token.
+      let bootstrapToken = process.env.QUESTRADE_REFRESH_TOKEN;
+      try {
+        if (fs.existsSync(this.tokenFilePath)) {
+          const existing: TokenData = JSON.parse(await fs.promises.readFile(this.tokenFilePath, 'utf8'));
+          if (existing.bootstrapToken) bootstrapToken = existing.bootstrapToken;
+        }
+      } catch {}
+
       const tokenData: TokenData = {
+        bootstrapToken,
         refreshToken,
         accessToken,
         apiUrl,
