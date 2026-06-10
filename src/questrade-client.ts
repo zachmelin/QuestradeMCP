@@ -1,4 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+
+declare module 'axios' {
+  interface InternalAxiosRequestConfig {
+    __retried?: boolean;
+  }
+}
 import { 
   QuestradeConfig, 
   Account, 
@@ -26,6 +32,20 @@ export class QuestradeClient {
         'Content-Type': 'application/json'
       }
     });
+
+    // Automatically refresh and retry on 401 — agents never need to call refresh_token manually
+    this.http.interceptors.response.use(
+      response => response,
+      async error => {
+        if (axios.isAxiosError(error) && error.response?.status === 401 && !error.config?.__retried) {
+          await this.refreshToken();
+          const retryConfig = { ...error.config!, __retried: true };
+          retryConfig.headers.set('Authorization', `Bearer ${this.config.accessToken}`);
+          return axios(retryConfig);
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   async refreshToken(): Promise<TokenResponse> {
